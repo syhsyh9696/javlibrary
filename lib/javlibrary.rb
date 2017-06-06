@@ -142,17 +142,17 @@ class Javlibrary
     def download_all_videos
         client = client()
         result = client.query("SELECT * FROM label WHERE video_download=0")
+        client.close
         actor_hash = actor_hash()
         genre_hash = genre_hash()
         result.each do |item|
             begin
-                video_info_insert(client, item['video_num'], item['video_label'],
+                video_info_insert(item['video_num'], item['video_label'],
                     actor_hash, genre_hash)
             rescue
                 next
             end
         end
-        client.close
     end
 
     def actor_hash
