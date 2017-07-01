@@ -32,6 +32,8 @@ class Javlibrary
         baseurl = "http://www.#{@url}/cn/?v=#{identifer}"
         response = Mechanize.new
         response.user_agent = Mechanize::AGENT_ALIASES.values[rand(21)]
+        response.read_timeout = 2
+        response.open_timeout = 2
         begin
             response.get baseurl
         rescue Timeout::Error
@@ -69,18 +71,20 @@ class Javlibrary
         client = client()
 
         result = downloader(identifer)
-
+        
         return nil if result == nil
         title, id, date, director, maker, label, cast_tmp, genres_tmp, img_url = result.split('$')
         cast = cast_tmp.split.reject(&:empty?)
         genres = genres_tmp.split.reject(&:empty?)
+        
         begin
             client.query("INSERT INTO video (video_id,video_name,license,url,director,label,date,maker)
             VALUES (#{index},'#{title}','#{id}','#{img_url}','#{director}','#{label}','#{date}','#{maker}')")
         rescue
-            client.query("UPDATE label SET video_download=1 WHERE video_num=#{index}")
+            client.query("UPDATE label SET video_download=0 WHERE video_num=#{index}")
             return nil
         end
+        
         cast.each do |a|
             a_tmp = actor_hash[a]
             next if a_tmp == nil
@@ -237,7 +241,7 @@ class Javlibrary
                 rescue
                     retry
                 end
-
+                
                 doc_page = Nokogiri::HTML(response_page.body)
                 doc_page.search('//div[@class="starbox"]/div[@class="searchitem"]/a').each do |row|
                     # row.text Actor.name
