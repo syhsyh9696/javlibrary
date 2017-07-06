@@ -147,6 +147,8 @@ class Javlibrary
         client = client()
         result = client.query("SELECT * FROM label WHERE video_download=0")
         client.close
+        result = result.collect{ |x| x }; result.shuffle!
+        
         actor_hash = actor_hash()
         genre_hash = genre_hash()
         result.each do |item|
